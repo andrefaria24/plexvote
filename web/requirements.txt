@@ -1,0 +1,4 @@
+flask
+plexapi
+redis
+flask_socketio

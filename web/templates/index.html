@@ -1,0 +1,31 @@
+{%extends "layout.html"%}
+{%block content%}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2 class="text-center">{{ movie.title }}</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <img src="{{ movie.thumbUrl }}" alt="{{ movie.title }} thumbnail" class="mx-auto d-block img-fluid">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="text-center">{{ movie.summary }}</p>
+            </div>
+        </div>
+        
+        <form method="POST">
+            <div class="row">
+                <div class="col-sm-6">
+                    <button type="submit" class="btn btn-primary btn-block" name="vote" id="btnYes" value="yes">Yes</button>
+                </div>
+                <div class="col-sm-6">
+                    <button type="submit" class="btn btn-primary btn-block" name="vote" id="btnNo" value="no">No</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{%endblock%}
