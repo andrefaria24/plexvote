@@ -10,28 +10,15 @@
   
     <script type="text/javascript">
       $(document).ready(function() {
-        var url = 'http://localhost:80'
+        var url = 'http://plexvote.local:80'                    //CHANGE TO DESIRED WEBPAGE URL
 
         var socket = io.connect(url);
 
-        /*
-        socket.on('agreement', function(){
-          console.log('agreement reached');
-        });
-        */
-
         socket.on('reloadPage', function(){
           window.location = url;
+        });
       });
-    });
     </script>
-
-    <style>
-      img {
-        width: 25%;
-        height: auto;
-      }
-    </style>
   </head>
 
   <body>

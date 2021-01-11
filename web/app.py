@@ -4,11 +4,13 @@ import redis
 from plexapi.server import PlexServer
 from flask_socketio import SocketIO, emit
 
-#INSERT PLEX INFORMATION HERE
+#PLEX INFORMATION
 plexServerUrl = 'https://000-000-0-0.00000000000000000000000000000000.plex.direct:32400'        # Ensure plex direct URL is used
-plexClientname = 'clientname'                                                                   # Ensure that client is online and on same network as Plex Server
 plexToken = '[PLEX TOKEN]'                                                                      # https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+voterCount = 2                                                                                  # Amount of voting users
+plexClientname = 'clientname'                                                                   # Ensure that client is online and on same network as Plex Server
 redisServer = 'plexvote_redis'                                                                  # redis container is setup by default
+#END PLEX INFORMATION
 
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
@@ -22,35 +24,45 @@ random.shuffle(movies)
 
 i = 0
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def home():
     global i
 
-    if request.method == 'POST':
-        r.lpush('vote',request.form['vote'])
-
-        if r.llen('vote') == 2:
-            totalVotes = []
-            while(r.llen('vote') != 0):
-                totalVotes.append(r.lpop('vote'))
-
-            if totalVotes[0] == 'yes' and totalVotes[1] == 'yes':
-                #socketio.emit('agreement', 'agreement reached')
-
-                votedMovie = plex.library.section('Movies').get(movies[i].title)
-                client = plex.client(plexClientname)
-                client.playMedia(votedMovie)
-            else:
-                if i < len(movies):
-                    i = i + 1
-                else:
-                    i = 0
-                
-                socketio.emit('reloadPage')
-
-                
     return render_template('index.html', movie = movies[i])
+
+@app.route('/vote', methods=['POST'])
+def vote():
+    global i
+
+    r.lpush('vote', request.form['btnVote'])
+
+    if r.llen('vote') < voterCount:
+        #return ('', 204)        #Return no content
+        return render_template('waiting.html')
+    else:
+        totalVotes = []
+        while(r.llen('vote') != 0):
+            totalVotes.append(r.lpop('vote'))
+
+        if totalVotes[0] == 'yes' and totalVotes[1] == 'yes':
+            print("Playing " + movies[i].title + " on " + plexClientname)
+
+            votedMovie = plex.library.section('Movies').get(movies[i].title)
+            client = plex.client(plexClientname)
+            client.playMedia(votedMovie)
+            
+            socketio.emit('reloadPage', broadcast = True)
+        else:
+            if i < len(movies):
+                i = i + 1
+            else:
+                i = 0
+            
+            socketio.emit('reloadPage', broadcast = True)
+
+        return render_template('index.html', movie = movies[i])
         
+
 
 if __name__ == '__main__':
     socketio.run(app,debug=False, host='0.0.0.0', port='80')
