@@ -44,25 +44,22 @@ def vote():
         while(r.llen('vote') != 0):
             totalVotes.append(r.lpop('vote'))
 
-        if totalVotes[0] == 'yes' and totalVotes[1] == 'yes':
-            print("Playing " + movies[i].title + " on " + plexClientname)
-
-            votedMovie = plex.library.section('Movies').get(movies[i].title)
-            client = plex.client(plexClientname)
-            client.playMedia(votedMovie)
-            
-            socketio.emit('reloadPage', broadcast = True)
-        else:
-            if i < len(movies):
-                i = i + 1
+        for vote in totalVotes:
+            if vote == 'no':
+                if i < len(movies):
+                    i = i + 1
+                else:
+                    i = 0
             else:
-                i = 0
+                #print("Playing " + movies[i].title + " on " + plexClientname)
+
+                votedMovie = plex.library.section('Movies').get(movies[i].title)
+                client = plex.client(plexClientname)
+                client.playMedia(votedMovie)
             
-            socketio.emit('reloadPage', broadcast = True)
+        socketio.emit('reloadPage', broadcast = True)
 
         return render_template('index.html', movie = movies[i])
         
-
-
 if __name__ == '__main__':
     socketio.run(app,debug=False, host='0.0.0.0', port='80')
